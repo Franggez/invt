@@ -3,30 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema Inventario - La Número 1</title>
+    <title>Inventario Inteligente - La Número 1</title>
     <style>
-        :root { --rojo: #b71c1c; --alerta: #ff1744; --azul: #1976d2; }
+        :root { --rojo: #b71c1c; --alerta: #ff1744; --azul: #1976d2; --verde: #2e7d32; }
         body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
         .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
-        h1 { color: var(--rojo); text-align: center; border-bottom: 3px solid var(--rojo); padding-bottom: 10px; }
-        .seccion-titulo { background: #333; color: white; padding: 10px; margin-top: 20px; border-radius: 5px; }
-        .item-row { display: flex; align-items: center; justify-content: space-between; padding: 12px; border-bottom: 1px solid #ddd; }
-        .item-info { flex: 2; font-weight: bold; }
+        
+        h1 { color: var(--rojo); text-align: center; margin-bottom: 10px; }
+        
+        /* Reproductor de Música */
+        .music-player { background: #f8f9fa; padding: 10px; border-radius: 10px; text-align: center; margin-bottom: 20px; border: 1px solid #ddd; }
+        .music-player span { font-size: 12px; font-weight: bold; color: #555; display: block; margin-bottom: 5px; }
+
+        /* Buscador Fijo */
+        .search-container { position: sticky; top: 0; background: white; padding: 10px 0; z-index: 100; border-bottom: 2px solid #eee; margin-bottom: 20px; }
+        #buscador { width: 100%; padding: 15px; border: 2px solid #ddd; border-radius: 10px; font-size: 18px; box-sizing: border-box; outline: none; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        #buscador:focus { border-color: var(--azul); }
+
+        .seccion-titulo { background: #333; color: white; padding: 10px; margin-top: 20px; border-radius: 5px; font-size: 14px; letter-spacing: 1px; }
+        
+        .item-row { display: flex; align-items: center; justify-content: space-between; padding: 12px; border-bottom: 1px solid #ddd; transition: 0.3s; }
+        .item-row:hover { background: #f9f9f9; }
+        
+        .item-info { flex: 2; }
+        .nombre-prod { font-weight: bold; display: block; font-size: 16px; color: #333; }
+        
+        /* Etiquetas Disponibilidad */
+        .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; margin-top: 5px; text-transform: uppercase; }
+        .disp { background: #e8f5e9; color: var(--verde); }
+        .agot { background: #ffebee; color: var(--alerta); }
+        
         .inputs { flex: 2; display: flex; gap: 10px; justify-content: flex-end; }
-        input { width: 70px; padding: 8px; border: 1px solid #ccc; border-radius: 5px; text-align: center; font-size: 16px; }
-        .bajo-stock { color: var(--alerta) !important; animation: blink 2s infinite; }
-        .label-stock { font-size: 11px; display: block; color: #666; }
-        @keyframes blink { 50% { opacity: 0.5; } }
-        .btn-update { background: var(--rojo); color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 20px; }
-        .btn-reporte { background: var(--azul); color: white; border: none; padding: 10px; width: 100%; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        .loading { text-align: center; font-style: italic; color: #666; }
+        .input-group { text-align: center; }
+        input { width: 65px; padding: 8px; border: 1px solid #ccc; border-radius: 5px; text-align: center; font-size: 16px; font-weight: bold; }
+        
+        /* Estilo Alerta Rojo */
+        .bajo-stock { color: var(--alerta) !important; text-decoration: underline; }
+        .label-mini { font-size: 10px; color: #888; display: block; margin-bottom: 2px; }
+        
+        /* Botones */
+        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 25px; }
+        .btn-update { background: var(--rojo); color: white; border: none; padding: 15px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-reporte { background: var(--azul); color: white; border: none; padding: 15px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-update:active, .btn-reporte:active { transform: scale(0.95); }
+        
+        .hidden { display: none !important; }
+        #status { text-align: center; font-size: 14px; margin-bottom: 10px; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>Inventario Restaurant La Número 1</h1>
-    <div id="status" class="loading">Cargando datos...</div>
+    <h1>Restaurant La Número 1</h1>
+
+    <div class="music-player">
+        <span>🎵 Música de Ambiente</span>
+        <audio id="musicaFondo" controls loop style="height: 30px;">
+            <source src="https://www.bensound.com/bensound-music/bensound-jazzyfrenchy.mp3" type="audio/mpeg">
+        </audio>
+    </div>
+    
+    <div id="status">Cargando inventario...</div>
+
+    <div class="search-container">
+        <input type="text" id="buscador" placeholder="🔍 Buscar producto o iniciales..." onkeyup="filtrarProductos()">
+    </div>
     
     <div id="contenido-inventario">
         <div class="seccion-titulo">REFRESCOS Y CERVEZAS</div>
@@ -35,22 +76,27 @@
         <div id="area-vinos"></div>
     </div>
 
-    <button class="btn-update" onclick="actualizarInventario()">Sincronizar Cambios con Nube</button>
-    <button class="btn-reporte" onclick="generarReporte()">Ver Lista de Compras (Faltantes)</button>
+    <div class="btn-group">
+        <button class="btn-update" onclick="actualizarInventario()">Sincronizar Nube</button>
+        <button class="btn-reporte" onclick="generarReporte()">Lista de Compras</button>
+    </div>
 </div>
 
 <script>
-    const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbzcgry9MFj5lRcfp4j8HpoKoFny7Fsv3ulS_9lO0lwGR2kCm9wVXL6QzOLMXQkrKNNR-w/exec";
+        const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbzcgry9MFj5lRcfp4j8HpoKoFny7Fsv3ulS_9lO0lwGR2kCm9wVXL6QzOLMXQkrKNNR-w/exec"; 
     let datosActuales = [];
+
+    // Iniciar música al primer clic del usuario
+    window.onclick = () => { document.getElementById('musicaFondo').play(); };
 
     async function cargarDatos() {
         try {
             const response = await fetch(URL_SCRIPT);
             datosActuales = await response.json();
             renderizar(datosActuales);
-            document.getElementById('status').innerText = "✅ Datos actualizados";
+            document.getElementById('status').innerHTML = "<span style='color:green'>✅ Conectado a la Nube</span>";
         } catch (e) {
-            document.getElementById('status').innerText = "❌ Error de conexión.";
+            document.getElementById('status').innerHTML = "<span style='color:red'>❌ Error de conexión</span>";
         }
     }
 
@@ -61,67 +107,30 @@
 
         datos.forEach(item => {
             let esAlerta = false;
+            let disponible = item.cantidad > 0;
+            
             if (item.tipo === "Refresco") {
                 if (item.cantidad < 40 || item.cajas < 10) esAlerta = true;
-                areaRefrescos.innerHTML += crearFila(item, esAlerta, true);
+                areaRefrescos.innerHTML += crearFila(item, esAlerta, disponible, true);
             } else {
                 if (item.cantidad < 5) esAlerta = true;
-                areaVinos.innerHTML += crearFila(item, esAlerta, false);
+                areaVinos.innerHTML += crearFila(item, esAlerta, disponible, false);
             }
         });
     }
 
-    function crearFila(item, alerta, mostrarCajas) {
+    function crearFila(item, alerta, disponible, mostrarCajas) {
         return `
-            <div class="item-row">
-                <div class="item-info ${alerta ? 'bajo-stock' : ''}">${item.producto}</div>
-                <div class="inputs">
-                    <div><span class="label-stock">Pzs</span><input type="number" class="val-pzs" data-nombre="${item.producto}" value="${item.cantidad}"></div>
-                    ${mostrarCajas ? `<div><span class="label-stock">Cajas</span><input type="number" class="val-cajas" value="${item.cajas}"></div>` : ''}
+            <div class="item-row" data-nombre="${item.producto.toLowerCase()}">
+                <div class="item-info">
+                    <span class="nombre-prod ${alerta ? 'bajo-stock' : ''}">${item.producto}</span>
+                    <span class="badge ${disponible ? 'disp' : 'agot'}">${disponible ? 'Disponible' : 'Agotado'}</span>
                 </div>
-            </div>`;
-    }
-
-    function generarReporte() {
-        let faltantes = "<h1>Lista de Compras - La Número 1</h1><table border='1' style='width:100%; border-collapse: collapse; font-family: sans-serif;'>";
-        faltantes += "<tr style='background:#eee;'><th>Producto</th><th>Cantidad Actual</th><th>Estado</th></tr>";
-        
-        let hayFaltantes = false;
-        datosActuales.forEach(item => {
-            let alerta = (item.tipo === "Refresco") ? (item.cantidad < 40 || item.cajas < 10) : (item.cantidad < 5);
-            if(alerta) {
-                hayFaltantes = true;
-                faltantes += `<tr><td style="padding:10px;">${item.producto}</td><td style="padding:10px; text-align:center;">${item.cantidad} pzs / ${item.cajas} cajas</td><td style="color:red; padding:10px; text-align:center;"><b>PEDIR URGENTE</b></td></tr>`;
-            }
-        });
-
-        if(!hayFaltantes) {
-            alert("¡Todo está en orden! No hay productos bajo el límite.");
-            return;
-        }
-
-        const ventana = window.open('', '', 'width=600,height=600');
-        ventana.document.write(faltantes + "</table><br><button onclick='window.print()'>Imprimir Lista</button>");
-        ventana.document.close();
-    }
-
-    async function actualizarInventario() {
-        const btn = document.querySelector('.btn-update');
-        btn.innerText = "Sincronizando...";
-        const nuevosDatos = [];
-        document.querySelectorAll('.item-row').forEach(row => {
-            const nombre = row.querySelector('.val-pzs').dataset.nombre;
-            const pzs = row.querySelector('.val-pzs').value;
-            const cajas = row.querySelector('.val-cajas') ? row.querySelector('.val-cajas').value : 0;
-            nuevosDatos.push({ producto: nombre, cantidad: pzs, cajas: cajas });
-        });
-        await fetch(URL_SCRIPT, { method: 'POST', mode: 'no-cors', body: JSON.stringify(nuevosDatos) });
-        alert("Sincronizado.");
-        cargarDatos();
-        btn.innerText = "Sincronizar Cambios con Nube";
-    }
-
-    window.onload = cargarDatos;
-</script>
-</body>
-</html>
+                <div class="inputs">
+                    <div class="input-group">
+                        <span class="label-mini">Pzs</span>
+                        <input type="number" class="val-pzs" data-nombre="${item.producto}" value="${item.cantidad}">
+                    </div>
+                    ${mostrarCajas ? `
+                    <div class="input-group">
+                        <span class="label-mini">Cajas
