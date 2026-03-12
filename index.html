@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant La Número 1 - Encuesta</title>
+    <style>
+        body { font-family: sans-serif; background-color: #f4f4f4; text-align: center; padding: 20px; }
+        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); max-width: 400px; margin: auto; }
+        h1 { color: #d32f2f; }
+        button { background: #d32f2f; color: white; border: none; padding: 10px 20px; margin: 10px; border-radius: 5px; cursor: pointer; width: 80%; }
+        input, select, textarea { width: 90%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; }
+        .hidden { display: none; }
+        .stats { text-align: left; background: #eee; padding: 10px; border-radius: 5px; }
+    </style>
+</head>
+<body>
+
+    <div class="card" id="menu-principal">
+        <h1>Restaurant La Número 1</h1>
+        <p>Bienvenido. Por favor elige una opción:</p>
+        <button onclick="mostrarSeccion('encuesta')">Dejar Reseña / Queja</button>
+        <button onclick="mostrarSeccion('login')">Panel de Administración</button>
+    </div>
+
+    <div class="card hidden" id="encuesta">
+        <h2>Danos tu opinión</h2>
+        <label>¿Cómo calificas el servicio?</label>
+        <select id="voto">
+            <option value="excelente">Excelente ⭐⭐⭐⭐</option>
+            <option value="bueno">Bueno ⭐⭐⭐</option>
+            <option value="regular">Regular ⭐⭐</option>
+            <option value="malo">Malo ⭐</option>
+        </select>
+        <textarea id="queja" placeholder="Escribe aquí tu queja o sugerencia..."></textarea>
+        <button onclick="guardarEncuesta()">Enviar Feedback</button>
+        <button onclick="mostrarSeccion('menu-principal')">Volver</button>
+    </div>
+
+    <div class="card hidden" id="login">
+        <h2>Acceso Admin</h2>
+        <input type="text" id="user" placeholder="Usuario">
+        <input type="password" id="pass" placeholder="Contraseña">
+        <button onclick="validarAcceso()">Entrar</button>
+        <button onclick="mostrarSeccion('menu-principal')">Volver</button>
+    </div>
+
+    <div class="card hidden" id="admin-panel">
+        <h2>Panel de Control</h2>
+        <div class="stats" id="resultados"></div>
+        <h3>Buzón de Quejas:</h3>
+        <div class="stats" id="lista-quejas"></div>
+        <button onclick="mostrarSeccion('menu-principal')">Cerrar Sesión</button>
+        <button onclick="borrarTodo()" style="background: black;">Borrar Base de Datos</button>
+    </div>
+
+    <script>
+        // Cargar datos al iniciar
+        let datos = JSON.parse(localStorage.getItem('bd_restaurante')) || {
+            excelente: 0, bueno: 0, regular: 0, malo: 0, quejas: []
+        };
+
+        function mostrarSeccion(id) {
+            document.querySelectorAll('.card').forEach(c => c.classList.add('hidden'));
+            document.getElementById(id).classList.remove('hidden');
+            if(id === 'admin-panel') actualizarPanel();
+        }
+
+        function guardarEncuesta() {
+            const voto = document.getElementById('voto').value;
+            const queja = document.getElementById('queja').value;
+
+            datos[voto]++;
+            if(queja.trim() !== "") datos.quejas.push(queja);
+
+            localStorage.setItem('bd_restaurante', JSON.stringify(datos));
+            alert("¡Gracias por tu comentario!");
+            document.getElementById('queja').value = "";
+            mostrarSeccion('menu-principal');
+        }
+
+        function validarAcceso() {
+            const u = document.getElementById('user').value;
+            const p = document.getElementById('pass').value;
+            if(u === "panchito" && p === "potro") {
+                mostrarSeccion('admin-panel');
+            } else {
+                alert("Acceso denegado");
+            }
+        }
+
+        function actualizarPanel() {
+            document.getElementById('resultados').innerHTML = `
+                <p>Excelente: ${datos.excelente}</p>
+                <p>Bueno: ${datos.bueno}</p>
+                <p>Regular: ${datos.regular}</p>
+                <p>Malo: ${datos.malo}</p>
+            `;
+            document.getElementById('lista-quejas').innerHTML = datos.quejas.map(q => `<p>• ${q}</p>`).join('');
+        }
+
+        function borrarTodo() {
+            if(confirm("¿Seguro que quieres borrar todas las reseñas?")) {
+                localStorage.removeItem('bd_restaurante');
+                location.reload();
+            }
+        }
+    </script>
+</body>
+</html>
